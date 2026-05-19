@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AniTagger — Automatic anime image tagger using WD SwinV2 Tagger V2 with character identification and tag export.">
+    <title>AniTagger — Anime Image Tagger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <header class="header" id="appHeader">
+        <div class="header-inner">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="36" height="36" rx="8" stroke="url(#logoGrad)" stroke-width="2.5"/>
+                        <path d="M12 28 L20 12 L28 28" stroke="url(#logoGrad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="20" cy="20" r="3" fill="url(#logoGrad)"/>
+                        <defs><linearGradient id="logoGrad" x1="0" y1="0" x2="40" y2="40"><stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+                    </svg>
+                </div>
+                <div class="logo-text"><h1>AniTagger</h1><span class="logo-subtitle">WD SwinV2 Tagger V2</span></div>
+            </div>
+            <div class="header-status" id="modelStatus"><div class="status-dot loading"></div><span>Loading model...</span></div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <section class="folder-bar glass-card" id="folderBar">
+            <div class="folder-input-group">
+                <div class="input-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <input type="text" id="folderInput" class="folder-input" placeholder="Paste the path to a folder with anime images..." autocomplete="off" spellcheck="false">
+                <button class="btn btn-primary" id="scanBtn" onclick="scanFolder()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    Scan
+                </button>
+            </div>
+        </section>
+
+        <section class="action-bar" id="actionBar" style="display:none;">
+            <div class="action-bar-left"><span class="image-count" id="imageCount">0 images</span><span class="tagged-count" id="taggedCount">0 tagged</span></div>
+            <div class="action-bar-center">
+                <div class="threshold-controls">
+                    <div class="threshold-group"><label for="generalThreshold">General Tags</label><input type="range" id="generalThreshold" min="0.1" max="0.9" step="0.05" value="0.35"><span class="threshold-value" id="generalThresholdValue">0.35</span></div>
+                    <div class="threshold-group"><label for="charThreshold">Characters</label><input type="range" id="charThreshold" min="0.1" max="0.99" step="0.01" value="0.85"><span class="threshold-value" id="charThresholdValue">0.85</span></div>
+                </div>
+                <div class="f95-toggle-group">
+                    <label class="toggle-switch" for="f95Toggle" title="Match detected tags against F95zone tag list">
+                        <input type="checkbox" id="f95Toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="f95-label">F95 Tags</span>
+                </div>
+                <div class="f95-toggle-group">
+                    <label class="toggle-switch rename-toggle" for="renameToggle" title="Rename files by character and sort by exposure">
+                        <input type="checkbox" id="renameToggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="f95-label">Rename Character</span>
+                </div>
+            </div>
+            <div class="action-bar-right">
+                <button class="btn btn-accent" id="tagAllBtn" onclick="tagAllImages()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Tag All</button>
+                <button class="btn btn-primary" id="applyRenameBtn" onclick="applyRenames()" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Aplicar Nomes</button>
+                <button class="btn btn-secondary" id="exportAllBtn" onclick="exportAll()" disabled><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export ZIP</button>
+            </div>
+        </section>
+
+        <!-- F95 Tags Panel -->
+        <section class="f95-panel glass-card" id="f95Panel" style="display:none;">
+            <div class="f95-panel-header">
+                <h3 class="f95-panel-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                    F95 Tags Detected
+                </h3>
+                <span class="f95-count" id="f95Count">0 tags</span>
+            </div>
+            <div class="f95-tags-list" id="f95TagsList">
+                <span class="f95-empty">Tag all images first to see matched F95 tags</span>
+            </div>
+        </section>
+
+        <div class="progress-container" id="progressContainer" style="display:none;">
+            <div class="progress-info"><span id="progressText">Processing...</span><span id="progressPercent">0%</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <div class="content-area" id="contentArea">
+            <section class="gallery" id="gallery">
+                <div class="empty-state" id="emptyState">
+                    <div class="empty-icon"><svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+                    <h2>No images loaded</h2>
+                    <p>Paste the path to a folder with anime images above to get started</p>
+                </div>
+                <div class="image-grid" id="imageGrid"></div>
+            </section>
+
+            <aside class="detail-panel glass-card" id="detailPanel" style="display:none;">
+                <div class="detail-header">
+                    <h2 id="detailTitle">Details</h2>
+                    <button class="btn-icon" onclick="closeDetailPanel()" title="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                </div>
+                <div class="detail-content">
+                    <div class="detail-preview"><img id="detailImage" src="" alt="Preview" loading="lazy"></div>
+                    <div class="detail-info">
+                        <div class="info-row"><span class="info-label">File</span><span class="info-value" id="detailFilename"></span></div>
+                        <div class="info-row"><span class="info-label">SHA256</span><span class="info-value mono" id="detailHash"></span></div>
+                    </div>
+                    <button class="btn btn-accent btn-full" id="tagSingleBtn" onclick="tagCurrentImage()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> Tag this image</button>
+                    <div class="tag-section" id="characterSection" style="display:none;"><h3 class="tag-section-title"><span class="section-icon character">&#128100;</span> Characters</h3><div class="tag-list" id="characterTags"></div></div>
+                    <div class="tag-section" id="ratingSection" style="display:none;"><h3 class="tag-section-title"><span class="section-icon rating">&#11088;</span> Rating</h3><div class="tag-list" id="ratingTags"></div></div>
+                    <div class="tag-section" id="generalSection" style="display:none;"><h3 class="tag-section-title"><span class="section-icon general">&#127991;&#65039;</span> General Tags</h3><div class="tag-list" id="generalTags"></div></div>
+                    <button class="btn btn-secondary btn-full" id="exportSingleBtn" onclick="exportSingle()" style="display:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Export Tags (.txt)</button>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/static/app.js"></script>
+</body>
+</html>

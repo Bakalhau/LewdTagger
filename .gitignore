@@ -1,0 +1,20 @@
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Any local test directories
+test_images/
+output/
+
+# Loose test texts
+F95 - Tags.txt
+*.csv
+*.onnx
