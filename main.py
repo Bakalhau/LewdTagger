@@ -1,5 +1,5 @@
 """
-AniTagger — Anime Image Tagger with WD SwinV2 Tagger V2
+LewdTagger — Anime Image Tagger with WD SwinV2 Tagger V2
 Backend FastAPI server with ONNX Runtime inference.
 """
 
@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI):
     loop.run_in_executor(None, load_model)
     yield
 
-app = FastAPI(title="AniTagger", version="1.0.0", lifespan=lifespan)
+app = FastAPI(title="LewdTagger", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -105,16 +105,16 @@ def load_model():
     """Download and load the WD SwinV2 Tagger V2 model."""
     model_state["status"] = "loading"
     try:
-        print("[AniTagger] Downloading model from HuggingFace...")
+        print("[LewdTagger] Downloading model from HuggingFace...")
         model_path = hf_hub_download(repo_id=MODEL_REPO, filename=MODEL_FILE)
         tags_path = hf_hub_download(repo_id=MODEL_REPO, filename=TAGS_FILE)
 
-        print("[AniTagger] Loading ONNX model...")
+        print("[LewdTagger] Loading ONNX model...")
         providers = []
         available = ort.get_available_providers()
         if "CUDAExecutionProvider" in available:
             providers.append("CUDAExecutionProvider")
-            print("[AniTagger] [OK] Using CUDA GPU acceleration")
+            print("[LewdTagger] [OK] Using CUDA GPU acceleration")
         providers.append("CPUExecutionProvider")
 
         session = ort.InferenceSession(model_path, providers=providers)
@@ -125,13 +125,13 @@ def load_model():
         model_state["status"] = "ready"
         model_state["error"] = None
 
-        print(f"[AniTagger] [OK] Model loaded successfully ({len(tags_df)} tags)")
-        print(f"[AniTagger] [OK] Providers: {session.get_providers()}")
+        print(f"[LewdTagger] [OK] Model loaded successfully ({len(tags_df)} tags)")
+        print(f"[LewdTagger] [OK] Providers: {session.get_providers()}")
 
     except Exception as e:
         model_state["status"] = "error"
         model_state["error"] = str(e)
-        print(f"[AniTagger] [ERROR] Model loading failed: {e}")
+        print(f"[LewdTagger] [ERROR] Model loading failed: {e}")
 
 
 # ──────────────────────────────────────────────
@@ -540,7 +540,7 @@ def _format_export(img_data: dict, use_hash: bool) -> str:
         return ""
 
     lines = []
-    lines.append("# AniTagger Export")
+    lines.append("# LewdTagger Export")
     lines.append(f"# Image: {img_data['filename']}")
     lines.append(f"# SHA256: {img_data.get('hash', 'N/A')}")
     lines.append(f"# Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -622,7 +622,7 @@ async def export_all_tags(req: ExportAllRequest):
     return StreamingResponse(
         buf,
         media_type="application/zip",
-        headers={"Content-Disposition": f'attachment; filename="anitagger_export_{timestamp}.zip"'},
+        headers={"Content-Disposition": f'attachment; filename="lewdtagger_export_{timestamp}.zip"'},
     )
 
 
@@ -667,7 +667,7 @@ if __name__ == "__main__":
     import uvicorn
     print("")
     print("  +-----------------------------------------+")
-    print("  |       AniTagger v1.0.0                  |")
+    print("  |       LewdTagger v1.0.0                  |")
     print("  |  Anime Image Tagger - WD SwinV2 V2      |")
     print("  |  http://localhost:8000                   |")
     print("  +-----------------------------------------+")

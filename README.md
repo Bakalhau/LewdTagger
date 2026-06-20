@@ -1,6 +1,6 @@
-# AniTagger
+# LewdTagger
 
-AniTagger is a high-performance, local web application for automatic anime image tagging and character identification. The tool uses the **WD 1.4 SwinV2 Tagger V2** artificial intelligence model, running via ONNX Runtime for blazing-fast backend processing.
+LewdTagger is a high-performance, local web application for automatic anime image tagging and character identification. The tool uses the **WD 1.4 SwinV2 Tagger V2** artificial intelligence model, running via ONNX Runtime for blazing-fast backend processing.
 
 ## Key Features
 - **Recursive Scanning:** Search for thousands of images across folders and subfolders.
@@ -36,7 +36,7 @@ Open your preferred web browser and go to:
 
 ## ⚡ Performance: CPU vs GPU
 
-By default, AniTagger runs using your **CPU**. While this works perfectly fine and requires no special setup, you can unlock significantly faster tagging speeds by using a dedicated **GPU** (like an NVIDIA RTX card).
+By default, LewdTagger runs using your **CPU**. While this works perfectly fine and requires no special setup, you can unlock significantly faster tagging speeds by using a dedicated **GPU** (like an NVIDIA RTX card).
 
 To enable GPU acceleration, simply uninstall the default ONNX package and install the GPU version:
 ```bash

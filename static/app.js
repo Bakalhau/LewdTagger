@@ -1,5 +1,5 @@
 /**
- * AniTagger — Frontend Application Logic
+ * LewdTagger — Frontend Application Logic
  * Manages image gallery, tagging, detail panel, F95 tags, and exports.
  */
 
@@ -503,7 +503,7 @@ async function exportAll() {
         const res = await fetch('/api/export-all', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ use_hash: false }) });
         if (!res.ok) throw new Error('Export failed');
         const blob = await res.blob();
-        const cd = res.headers.get('Content-Disposition'); let fn = 'anitagger_export.zip';
+        const cd = res.headers.get('Content-Disposition'); let fn = 'lewdtagger_export.zip';
         if (cd) { const m = cd.match(/filename="?(.+?)"?$/); if (m) fn = m[1]; }
         const url = URL.createObjectURL(blob), a = document.createElement('a');
         a.href = url; a.download = fn; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
